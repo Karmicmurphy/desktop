@@ -2,6 +2,10 @@
   "recommendations": [
     "esbenp.prettier-vscode",
     "dbaeumer.vscode-eslint",
-    "stkb.rewrap"
+    "stkb.rewrap",
+    "mohd-akram.vscode-html-format",
+    "shufo.vscode-blade-formatter",
+    "svelte.svelte-vscode",
+    "castwide.solargraph"
   ]
 }
