@@ -6,6 +6,7 @@
     "mohd-akram.vscode-html-format",
     "shufo.vscode-blade-formatter",
     "svelte.svelte-vscode",
-    "castwide.solargraph"
+    "castwide.solargraph",
+    "haselerdev.aiquickfix"
   ]
 }
