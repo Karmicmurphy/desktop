@@ -1,14 +1,4 @@
-import * as React from 'react'
-import * as Path from 'path'
 
-import { TransitionGroup, CSSTransition } from 'react-transition-group'
-import {
-  IAppState,
-  RepositorySectionTab,
-  FoldoutType,
-  SelectionType,
-  HistoryTabMode,
-} from '../lib/app-state'
 import { defaultErrorHandler, Dispatcher } from './dispatcher'
 import { AppStore, GitHubUserStore, IssuesStore } from '../lib/stores'
 import { assertNever } from '../lib/fatal-error'

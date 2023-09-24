@@ -24,6 +24,7 @@ import { Loading } from '../lib/loading'
 import { getPullRequestReviewStateIcon } from '../notifications/pull-request-review-helpers'
 import { Octicon } from '../octicons'
 import * as OcticonSymbol from '../octicons/octicons.generated'
+import { ITestNotificationsState } from '../tab-bar-item'
 
 enum TestNotificationType {
   PullRequestReview,
@@ -36,7 +37,7 @@ enum TestNotificationStepKind {
   SelectPullRequestComment,
 }
 
-type TestNotificationFlow = {
+export type TestNotificationFlow = {
   readonly type: TestNotificationType
   readonly steps: ReadonlyArray<TestNotificationStepKind>
 }
@@ -72,7 +73,7 @@ type TestNotificationStepSelectPullRequestCommentResult = {
   readonly isIssueComment: boolean
 }
 
-type TestNotificationStepResultMap = Map<
+export type TestNotificationStepResultMap = Map<
   TestNotificationStepKind.SelectPullRequest,
   TestNotificationStepSelectPullRequestResult
 > &
@@ -84,15 +85,6 @@ type TestNotificationStepResultMap = Map<
     TestNotificationStepKind.SelectPullRequestComment,
     TestNotificationStepSelectPullRequestCommentResult
   >
-
-interface ITestNotificationsState {
-  readonly selectedFlow: TestNotificationFlow | null
-  readonly stepResults: TestNotificationStepResultMap
-  readonly loading: boolean
-  readonly pullRequests: ReadonlyArray<PullRequest>
-  readonly reviews: ReadonlyArray<ValidNotificationPullRequestReview>
-  readonly comments: ReadonlyArray<IAPIComment>
-}
 
 interface ITestNotificationsProps {
   readonly dispatcher: Dispatcher
@@ -150,6 +142,7 @@ export class TestNotifications extends React.Component<
       pullRequests: [],
       reviews: [],
       comments: [],
+      selectedRows: [],
     }
   }
 
@@ -250,6 +243,7 @@ export class TestNotifications extends React.Component<
           .then(pullRequests => {
             this.setState({
               pullRequests,
+              selectedRows: [],
               loading: false,
             })
           })
@@ -274,6 +268,7 @@ export class TestNotifications extends React.Component<
           .then(reviews => {
             this.setState({
               reviews,
+              selectedRows: [],
               loading: false,
             })
           })
@@ -298,6 +293,7 @@ export class TestNotifications extends React.Component<
           .then(comments => {
             this.setState({
               comments,
+              selectedRows: [],
               loading: false,
             })
           })
@@ -389,7 +385,7 @@ export class TestNotifications extends React.Component<
       return <Loading />
     }
 
-    const { pullRequests } = this.state
+    const { pullRequests, selectedRows } = this.state
 
     if (pullRequests.length === 0) {
       return <p>No pull requests found</p>
@@ -402,8 +398,9 @@ export class TestNotifications extends React.Component<
           rowHeight={40}
           rowCount={[pullRequests.length]}
           rowRenderer={this.renderPullRequestRow}
-          selectedRows={[]}
+          selectedRows={selectedRows}
           onRowClick={this.onPullRequestRowClick}
+          onSelectedRowChanged={this.onSelectedRowChanged}
         />
       </div>
     )
@@ -432,7 +429,7 @@ export class TestNotifications extends React.Component<
       return <Loading />
     }
 
-    const { reviews } = this.state
+    const { reviews, selectedRows } = this.state
 
     if (reviews.length === 0) {
       return <p>No reviews found</p>
@@ -445,11 +442,18 @@ export class TestNotifications extends React.Component<
           rowHeight={40}
           rowCount={[reviews.length]}
           rowRenderer={this.renderPullRequestReviewRow}
-          selectedRows={[]}
+          selectedRows={selectedRows}
           onRowClick={this.onPullRequestReviewRowClick}
+          onSelectedRowChanged={this.onSelectedRowChanged}
         />
       </div>
     )
+  }
+
+  private onSelectedRowChanged = (selectedRow: RowIndexPath) => {
+    this.setState({
+      selectedRows: [selectedRow],
+    })
   }
 
   private onPullRequestReviewRowClick = (indexPath: RowIndexPath) => {
@@ -475,7 +479,7 @@ export class TestNotifications extends React.Component<
       return <Loading />
     }
 
-    const { comments } = this.state
+    const { comments, selectedRows } = this.state
 
     if (comments.length === 0) {
       return <p>No comments found</p>
@@ -488,8 +492,9 @@ export class TestNotifications extends React.Component<
           rowHeight={40}
           rowCount={[comments.length]}
           rowRenderer={this.renderPullRequestCommentRow}
-          selectedRows={[]}
+          selectedRows={selectedRows}
           onRowClick={this.onPullRequestCommentRowClick}
+          onSelectedRowChanged={this.onSelectedRowChanged}
         />
       </div>
     )

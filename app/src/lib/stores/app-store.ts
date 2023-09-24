@@ -1,36 +1,4 @@
-import * as Path from 'path'
-import {
-  AccountsStore,
-  CloningRepositoriesStore,
-  GitHubUserStore,
-  GitStore,
-  IssuesStore,
-  PullRequestCoordinator,
-  RepositoriesStore,
-  SignInStore,
-  UpstreamRemoteName,
-} from '.'
-import { Account } from '../../models/account'
-import { AppMenu, IMenu } from '../../models/app-menu'
-import { Author } from '../../models/author'
-import { Branch, BranchType, IAheadBehind } from '../../models/branch'
-import { BranchesTab } from '../../models/branches-tab'
-import { CloneRepositoryTab } from '../../models/clone-repository-tab'
-import { CloningRepository } from '../../models/cloning-repository'
-import {
-  Commit,
-  ICommitContext,
-  CommitOneLine,
-  shortenSHA,
-} from '../../models/commit'
-import {
-  DiffSelection,
-  DiffSelectionType,
-  DiffType,
-  ImageDiffType,
-  ITextDiff,
-} from '../../models/diff'
-import { FetchType } from '../../models/fetch'
+
 import {
   GitHubRepository,
   hasWritePermission,
@@ -152,27 +120,7 @@ import {
   push as pushRepo,
   renameBranch,
   saveGitIgnore,
-  appendIgnoreRule,
-  createMergeCommit,
-  getBranchesPointedAt,
-  abortRebase,
-  continueRebase,
-  rebase,
-  PushOptions,
-  RebaseResult,
-  getRebaseSnapshot,
-  IStatusResult,
-  GitError,
-  MergeResult,
-  getBranchesDifferingFromUpstream,
-  deleteLocalBranch,
-  deleteRemoteBranch,
-  fastForwardBranches,
-  GitResetMode,
-  reset,
-  getBranchAheadBehind,
-  getRebaseInternalState,
-  getCommit,
+
   appendIgnoreFile,
   getRepositoryType,
   RepositoryType,
@@ -182,6 +130,7 @@ import {
   getBranchMergeBaseChangedFiles,
   getBranchMergeBaseDiff,
   checkoutCommit,
+  IStatusResult,
 } from '../git'
 import {
   installGlobalLFSFilters,
@@ -240,93 +189,73 @@ import { ManualConflictResolution } from '../../models/manual-conflict-resolutio
 import { BranchPruner } from './helpers/branch-pruner'
 import { enableMoveStash } from '../feature-flag'
 import { Banner, BannerType } from '../../models/banner'
-import { ComputedAction } from '../../models/computed-action'
-import {
-  createDesktopStashEntry,
-  getLastDesktopStashEntryForBranch,
-  popStashEntry,
-  dropDesktopStashEntry,
-  moveStashEntry,
-} from '../git/stash'
-import {
-  UncommittedChangesStrategy,
-  defaultUncommittedChangesStrategy,
-} from '../../models/uncommitted-changes-strategy'
-import { IStashEntry, StashedChangesLoadStates } from '../../models/stash-entry'
-import { arrayEquals } from '../equality'
-import { MenuLabelsEvent } from '../../models/menu-labels'
-import { findRemoteBranchName } from './helpers/find-branch-name'
-import { updateRemoteUrl } from './updates/update-remote-url'
-import {
-  TutorialStep,
-  orderedTutorialSteps,
-  isValidTutorialStep,
-} from '../../models/tutorial-step'
-import { OnboardingTutorialAssessor } from './helpers/tutorial-assessor'
-import { getUntrackedFiles } from '../status'
-import { isBranchPushable } from '../helpers/push-control'
-import {
-  findAssociatedPullRequest,
-  isPullRequestAssociatedWithBranch,
-} from '../helpers/pull-request-matching'
-import { parseRemote } from '../../lib/remote-parsing'
-import { createTutorialRepository } from './helpers/create-tutorial-repository'
-import { sendNonFatalException } from '../helpers/non-fatal-exception'
-import { getDefaultDir } from '../../ui/lib/default-dir'
-import { WorkflowPreferences } from '../../models/workflow-preferences'
-import { RepositoryIndicatorUpdater } from './helpers/repository-indicator-updater'
-import { isAttributableEmailFor } from '../email'
-import { TrashNameLabel } from '../../ui/lib/context-menu'
-import { GitError as DugiteError } from 'dugite'
-import {
-  ErrorWithMetadata,
-  CheckoutError,
-  DiscardChangesError,
-} from '../error-with-metadata'
-import {
-  ShowSideBySideDiffDefault,
-  getShowSideBySideDiff,
-  setShowSideBySideDiff,
-} from '../../ui/lib/diff-mode'
-import {
-  abortCherryPick,
-  cherryPick,
-  CherryPickResult,
-  continueCherryPick,
-  getCherryPickSnapshot,
-  isCherryPickHeadFound,
-} from '../git/cherry-pick'
-import { DragElement } from '../../models/drag-drop'
-import { ILastThankYou } from '../../models/last-thank-you'
-import { squash } from '../git/squash'
-import { getTipSha } from '../tip'
-import {
-  MultiCommitOperationDetail,
-  MultiCommitOperationKind,
-  MultiCommitOperationStep,
-  MultiCommitOperationStepKind,
-} from '../../models/multi-commit-operation'
-import { reorder } from '../git/reorder'
-import { UseWindowsOpenSSHKey } from '../ssh/ssh'
-import { isConflictsFlow } from '../multi-commit-operation'
-import { clamp } from '../clamp'
-import { EndpointToken } from '../endpoint-token'
-import { IRefCheck } from '../ci-checks/ci-checks'
-import {
-  NotificationsStore,
-  getNotificationsEnabled,
-} from './notifications-store'
-import * as ipcRenderer from '../ipc-renderer'
-import { pathExists } from '../../ui/lib/path-exists'
-import { offsetFromNow } from '../offset-from'
-import { findContributionTargetDefaultBranch } from '../branch'
-import { ValidNotificationPullRequestReview } from '../valid-notification-pull-request-review'
+
 import { determineMergeability } from '../git/merge-tree'
 import { PopupManager } from '../popup-manager'
 import { resizableComponentClass } from '../../ui/resizable'
 import { compare } from '../compare'
 import { parseRepoRules, useRepoRulesLogic } from '../helpers/repo-rules'
 import { RepoRulesInfo } from '../../models/repo-rules'
+import { ipcRenderer } from '../../../test/__mocks__/electron'
+import { Account } from '../../models/account'
+import { AppMenu, IMenu } from '../../models/app-menu'
+import { Author } from '../../models/author'
+import { Branch, BranchType, IAheadBehind } from '../../models/branch'
+import { BranchesTab } from '../../models/branches-tab'
+import { CloneRepositoryTab } from '../../models/clone-repository-tab'
+import { CloningRepository } from '../../models/cloning-repository'
+import { Commit, CommitOneLine, ICommitContext, shortenSHA } from '../../models/commit'
+import { ComputedAction } from '../../models/computed-action'
+import { ImageDiffType, DiffType, DiffSelectionType, DiffSelection, ITextDiff } from '../../models/diff'
+import { DragElement } from '../../models/drag-drop'
+import { FetchType } from '../../models/fetch'
+import { ILastThankYou } from '../../models/last-thank-you'
+import { MenuLabelsEvent } from '../../models/menu-labels'
+import { MultiCommitOperationDetail, MultiCommitOperationKind, MultiCommitOperationStepKind, MultiCommitOperationStep } from '../../models/multi-commit-operation'
+import { StashedChangesLoadStates, IStashEntry } from '../../models/stash-entry'
+import { TutorialStep, isValidTutorialStep, orderedTutorialSteps } from '../../models/tutorial-step'
+import { defaultUncommittedChangesStrategy, UncommittedChangesStrategy } from '../../models/uncommitted-changes-strategy'
+import { WorkflowPreferences } from '../../models/workflow-preferences'
+import { TrashNameLabel } from '../../ui/lib/context-menu'
+import { getDefaultDir } from '../../ui/lib/default-dir'
+import { ShowSideBySideDiffDefault, getShowSideBySideDiff, setShowSideBySideDiff } from '../../ui/lib/diff-mode'
+import { pathExists } from '../../ui/lib/path-exists'
+import { findContributionTargetDefaultBranch } from '../branch'
+import { IRefCheck } from '../ci-checks/ci-checks'
+import { clamp } from '../clamp'
+import { isAttributableEmailFor } from '../email'
+import { EndpointToken } from '../endpoint-token'
+import { arrayEquals } from '../equality'
+import { CheckoutError, DiscardChangesError, ErrorWithMetadata } from '../error-with-metadata'
+import { getCherryPickSnapshot, CherryPickResult, cherryPick, abortCherryPick, continueCherryPick, isCherryPickHeadFound } from '../git/cherry-pick'
+import { reorder } from '../git/reorder'
+import { squash } from '../git/squash'
+import { getLastDesktopStashEntryForBranch, popStashEntry, moveStashEntry, dropDesktopStashEntry, createDesktopStashEntry } from '../git/stash'
+import { sendNonFatalException } from '../helpers/non-fatal-exception'
+import { isPullRequestAssociatedWithBranch, findAssociatedPullRequest } from '../helpers/pull-request-matching'
+import { isBranchPushable } from '../helpers/push-control'
+import { isConflictsFlow } from '../multi-commit-operation'
+import { offsetFromNow } from '../offset-from'
+import { parseRemote } from '../remote-parsing'
+import { UseWindowsOpenSSHKey } from '../ssh/ssh'
+import { getUntrackedFiles } from '../status'
+import { getTipSha } from '../tip'
+import { ValidNotificationPullRequestReview } from '../valid-notification-pull-request-review'
+import { AccountsStore } from './accounts-store'
+import { CloningRepositoriesStore } from './cloning-repositories-store'
+import { GitStore } from './git-store'
+import { GitHubUserStore } from './github-user-store'
+import { createTutorialRepository } from './helpers/create-tutorial-repository'
+import { findRemoteBranchName } from './helpers/find-branch-name'
+import { UpstreamRemoteName } from './helpers/find-upstream-remote'
+import { RepositoryIndicatorUpdater } from './helpers/repository-indicator-updater'
+import { OnboardingTutorialAssessor } from './helpers/tutorial-assessor'
+import { IssuesStore } from './issues-store'
+import { NotificationsStore, getNotificationsEnabled } from './notifications-store'
+import { PullRequestCoordinator } from './pull-request-coordinator'
+import { RepositoriesStore } from './repositories-store'
+import { SignInStore } from './sign-in-store'
+import { updateRemoteUrl } from './updates/update-remote-url'
 
 const LastSelectedRepositoryIDKey = 'last-selected-repository-id'
 
@@ -779,16 +708,13 @@ export class AppStore extends TypedBaseStore<IAppState> {
   }
 
   private wireupIpcEventHandlers() {
-    ipcRenderer.on('window-state-changed', (_, windowState) => {
-      this.windowState = windowState
-      this.emitUpdate()
-    })
+    ipcRenderer.on('window-state-changed', )
 
     ipcRenderer.on('zoom-factor-changed', (event: any, zoomFactor: number) => {
       this.onWindowZoomFactorChanged(zoomFactor)
     })
 
-    ipcRenderer.on('app-menu', (_, menu) => this.setAppMenu(menu))
+    ipcRenderer.on('app-menu', (_: any, menu: IMenu) => this.setAppMenu(menu))
   }
 
   private wireupStoreEventHandlers() {
@@ -844,6 +770,9 @@ export class AppStore extends TypedBaseStore<IAppState> {
 
     this.apiRepositoriesStore.onDidUpdate(() => this.emitUpdate())
     this.apiRepositoriesStore.onDidError(error => this.emitError(error))
+  }
+  updateRepositorySelectionAfterRepositoriesChanged() {
+    throw new Error('Method not implemented.')
   }
 
   /** Load the emoji from disk. */
@@ -1749,69 +1678,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
   }
 
   /** This shouldn't be called directly. See `Dispatcher`. */
-  public async _selectRepository(
-    repository: Repository | CloningRepository | null
-  ): Promise<Repository | null> {
-    const previouslySelectedRepository = this.selectedRepository
-
-    // do this quick check to see if we have a tutorial repository
-    // cause if its not we can quickly hide the tutorial pane
-    // in the first `emitUpdate` below
-    const previouslyInTutorial =
-      this.currentOnboardingTutorialStep !== TutorialStep.NotApplicable
-    if (
-      previouslyInTutorial &&
-      (!(repository instanceof Repository) || !repository.isTutorialRepository)
-    ) {
-      this.currentOnboardingTutorialStep = TutorialStep.NotApplicable
-    }
-
-    this.selectedRepository = repository
-
-    this.emitUpdate()
-    this.stopBackgroundFetching()
-    this.stopPullRequestUpdater()
-    this._clearBanner()
-    this.stopBackgroundPruner()
-
-    if (repository == null) {
-      return Promise.resolve(null)
-    }
-
-    if (!(repository instanceof Repository)) {
-      return Promise.resolve(null)
-    }
-
-    setNumber(LastSelectedRepositoryIDKey, repository.id)
-
-    const previousRepositoryId = previouslySelectedRepository
-      ? previouslySelectedRepository.id
-      : null
-
-    this.updateRecentRepositories(previousRepositoryId, repository.id)
-
-    // if repository might be marked missing, try checking if it has been restored
-    const refreshedRepository = await this.recoverMissingRepository(repository)
-    if (refreshedRepository.missing) {
-      // as the repository is no longer found on disk, cleaning this up
-      // ensures we don't accidentally run any Git operations against the
-      // wrong location if the user then relocates the `.git` folder elsewhere
-      this.gitStoreCache.remove(repository)
-      return Promise.resolve(null)
-    }
-
-    // This is now purely for metrics collection for `commitsToRepositoryWithBranchProtections`
-    // Understanding how many users actually contribute to repos with branch protections gives us
-    // insight into who our users are and what kinds of work they do
-    this.updateBranchProtectionsFromAPI(repository)
-
-    this.notificationsStore.selectRepository(repository)
-
-    return this._selectRepositoryRefreshTasks(
-      refreshedRepository,
-      previouslySelectedRepository
-    )
-  }
+  
 
   // update the stored list of recently opened repositories
   private updateRecentRepositories(
@@ -2365,199 +2232,16 @@ export class AppStore extends TypedBaseStore<IAppState> {
     })
   }
 
-  private updateRepositorySelectionAfterRepositoriesChanged() {
-    const selectedRepository = this.selectedRepository
-    let newSelectedRepository: Repository | CloningRepository | null =
-      this.selectedRepository
-    if (selectedRepository) {
-      const r =
-        this.repositories.find(
-          r =>
-            r.constructor === selectedRepository.constructor &&
-            r.id === selectedRepository.id
-        ) || null
-
-      newSelectedRepository = r
-    }
-
-    if (newSelectedRepository === null && this.repositories.length > 0) {
-      const lastSelectedID = getNumber(LastSelectedRepositoryIDKey, 0)
-      if (lastSelectedID > 0) {
-        newSelectedRepository =
-          this.repositories.find(r => r.id === lastSelectedID) || null
-      }
-
-      if (!newSelectedRepository) {
-        newSelectedRepository = this.repositories[0]
-      }
-    }
-
-    const repositoryChanged =
-      (selectedRepository &&
-        newSelectedRepository &&
-        selectedRepository.hash !== newSelectedRepository.hash) ||
-      (selectedRepository && !newSelectedRepository) ||
-      (!selectedRepository && newSelectedRepository)
-    if (repositoryChanged) {
-      this._selectRepository(newSelectedRepository)
-      this.emitUpdate()
-    }
-  }
+  
 
   /** This shouldn't be called directly. See `Dispatcher`. */
-  public async _loadStatus(
-    repository: Repository,
-    clearPartialState: boolean = false
-  ): Promise<IStatusResult | null> {
-    const gitStore = this.gitStoreCache.get(repository)
-    const status = await gitStore.loadStatus()
-
-    if (status === null) {
-      return null
-    }
-
-    this.repositoryStateCache.updateChangesState(repository, state =>
-      updateChangedFiles(state, status, clearPartialState)
-    )
-
-    this.repositoryStateCache.updateChangesState(repository, state => ({
-      conflictState: updateConflictState(state, status, this.statsStore),
-    }))
-
-    this.updateMultiCommitOperationConflictsIfFound(repository)
-    await this.initializeMultiCommitOperationIfConflictsFound(
-      repository,
-      status
-    )
-
-    if (this.selectedRepository === repository) {
-      this._triggerConflictsFlow(repository, status)
-    }
-
-    this.emitUpdate()
-
-    this.updateChangesWorkingDirectoryDiff(repository)
-
-    return status
-  }
+  
 
   /**
    * This method is to initialize a multi commit operation state on app load
    * if conflicts are found but not multi commmit operation exists.
    */
-  private async initializeMultiCommitOperationIfConflictsFound(
-    repository: Repository,
-    status: IStatusResult
-  ) {
-    const state = this.repositoryStateCache.get(repository)
-    const {
-      changesState: { conflictState },
-      multiCommitOperationState,
-      branchesState,
-    } = state
-
-    if (conflictState === null) {
-      this.clearConflictsFlowVisuals(state)
-      return
-    }
-
-    if (multiCommitOperationState !== null) {
-      return
-    }
-
-    let operationDetail: MultiCommitOperationDetail
-    let targetBranch: Branch | null = null
-    let commits: ReadonlyArray<Commit | CommitOneLine> = []
-    let originalBranchTip: string | null = ''
-    let progress: IMultiCommitOperationProgress | undefined = undefined
-
-    if (branchesState.tip.kind === TipState.Valid) {
-      targetBranch = branchesState.tip.branch
-      originalBranchTip = targetBranch.tip.sha
-    }
-
-    if (isMergeConflictState(conflictState)) {
-      operationDetail = {
-        kind: MultiCommitOperationKind.Merge,
-        isSquash: status.squashMsgFound,
-        sourceBranch: null,
-      }
-      originalBranchTip = targetBranch !== null ? targetBranch.tip.sha : null
-    } else if (isRebaseConflictState(conflictState)) {
-      const snapshot = await getRebaseSnapshot(repository)
-      const rebaseState = await getRebaseInternalState(repository)
-      if (snapshot === null || rebaseState === null) {
-        return
-      }
-
-      originalBranchTip = rebaseState.originalBranchTip
-      commits = snapshot.commits
-      progress = snapshot.progress
-      operationDetail = {
-        kind: MultiCommitOperationKind.Rebase,
-        sourceBranch: null,
-        commits,
-        currentTip: rebaseState.baseBranchTip,
-      }
-
-      const commit = await getCommit(repository, rebaseState.originalBranchTip)
-
-      if (commit !== null) {
-        targetBranch = new Branch(
-          rebaseState.targetBranch,
-          null,
-          commit,
-          BranchType.Local,
-          `refs/heads/${rebaseState.targetBranch}`
-        )
-      }
-    } else if (isCherryPickConflictState(conflictState)) {
-      const snapshot = await getCherryPickSnapshot(repository)
-      if (snapshot === null) {
-        return
-      }
-
-      originalBranchTip = null
-      commits = snapshot.commits
-      progress = snapshot.progress
-      operationDetail = {
-        kind: MultiCommitOperationKind.CherryPick,
-        sourceBranch: null,
-        branchCreated: false,
-        commits,
-      }
-
-      this.repositoryStateCache.updateMultiCommitOperationUndoState(
-        repository,
-        () => ({
-          undoSha: snapshot.targetBranchUndoSha,
-          branchName: '',
-        })
-      )
-    } else {
-      assertNever(conflictState, `Unsupported conflict kind`)
-    }
-
-    this._initializeMultiCommitOperation(
-      repository,
-      operationDetail,
-      targetBranch,
-      commits,
-      originalBranchTip,
-      false
-    )
-
-    if (progress === undefined) {
-      return
-    }
-
-    this.repositoryStateCache.updateMultiCommitOperationState(
-      repository,
-      () => ({
-        progress: progress as IMultiCommitOperationProgress,
-      })
-    )
-  }
+  
   /**
    * Push changes from latest conflicts into current multi step operation step, if needed
    *  - i.e. - multiple instance of running in to conflicts
@@ -2596,116 +2280,9 @@ export class AppStore extends TypedBaseStore<IAppState> {
     }
   }
 
-  private async _triggerConflictsFlow(
-    repository: Repository,
-    status: IStatusResult
-  ) {
-    const state = this.repositoryStateCache.get(repository)
-    const {
-      changesState: { conflictState },
-      multiCommitOperationState,
-    } = state
+  
 
-    if (conflictState === null) {
-      this.clearConflictsFlowVisuals(state)
-      return
-    }
-
-    if (multiCommitOperationState === null) {
-      return
-    }
-
-    const displayingBanner =
-      this.currentBanner !== null &&
-      this.currentBanner.type === BannerType.ConflictsFound
-
-    if (
-      displayingBanner ||
-      isConflictsFlow(
-        this.popupManager.areTherePopupsOfType(PopupType.MultiCommitOperation),
-        multiCommitOperationState
-      )
-    ) {
-      return
-    }
-
-    const { manualResolutions } = conflictState
-    let ourBranch, theirBranch
-
-    if (isMergeConflictState(conflictState)) {
-      theirBranch = await this.getMergeConflictsTheirBranch(
-        repository,
-        status.squashMsgFound,
-        multiCommitOperationState
-      )
-      ourBranch = conflictState.currentBranch
-    } else if (isRebaseConflictState(conflictState)) {
-      theirBranch = conflictState.targetBranch
-      ourBranch = conflictState.baseBranch
-    } else if (isCherryPickConflictState(conflictState)) {
-      if (
-        multiCommitOperationState !== null &&
-        multiCommitOperationState.operationDetail.kind ===
-          MultiCommitOperationKind.CherryPick &&
-        multiCommitOperationState.operationDetail.sourceBranch !== null
-      ) {
-        theirBranch =
-          multiCommitOperationState.operationDetail.sourceBranch.name
-      }
-      ourBranch = conflictState.targetBranchName
-    } else {
-      assertNever(conflictState, `Unsupported conflict kind`)
-    }
-
-    this._setMultiCommitOperationStep(repository, {
-      kind: MultiCommitOperationStepKind.ShowConflicts,
-      conflictState: {
-        kind: 'multiCommitOperation',
-        manualResolutions,
-        ourBranch,
-        theirBranch,
-      },
-    })
-
-    this._showPopup({
-      type: PopupType.MultiCommitOperation,
-      repository,
-    })
-  }
-
-  private async getMergeConflictsTheirBranch(
-    repository: Repository,
-    isSquash: boolean,
-    multiCommitOperationState: IMultiCommitOperationState | null
-  ): Promise<string | undefined> {
-    let theirBranch: string | undefined
-    if (
-      multiCommitOperationState !== null &&
-      multiCommitOperationState.operationDetail.kind ===
-        MultiCommitOperationKind.Merge &&
-      multiCommitOperationState.operationDetail.sourceBranch !== null
-    ) {
-      theirBranch = multiCommitOperationState.operationDetail.sourceBranch.name
-    }
-
-    if (theirBranch === undefined && !isSquash) {
-      const possibleTheirsBranches = await getBranchesPointedAt(
-        repository,
-        'MERGE_HEAD'
-      )
-
-      // null means we encountered an error
-      if (possibleTheirsBranches === null) {
-        return
-      }
-
-      theirBranch =
-        possibleTheirsBranches.length === 1
-          ? possibleTheirsBranches[0]
-          : undefined
-    }
-    return theirBranch
-  }
+  
 
   /**
    * Cleanup any related UI related to conflicts if still in use.
@@ -3263,38 +2840,12 @@ export class AppStore extends TypedBaseStore<IAppState> {
   }
 
   /** This shouldn't be called directly. See `Dispatcher`. */
-  public async _refreshOrRecoverRepository(
-    repository: Repository
-  ): Promise<void> {
-    // if repository is missing, try checking if it has been restored
-    if (repository.missing) {
-      const updatedRepository = await this.recoverMissingRepository(repository)
-      if (!updatedRepository.missing) {
-        // repository has been restored, attempt to refresh it now.
-        return this._refreshRepository(updatedRepository)
-      }
-    } else {
-      return this._refreshRepository(repository)
-    }
+  
+  recoverMissingRepository(repository: Repository) {
+    throw new Error('Method not implemented.')
   }
 
-  private async recoverMissingRepository(
-    repository: Repository
-  ): Promise<Repository> {
-    if (!repository.missing) {
-      return repository
-    }
-
-    const foundRepository =
-      (await pathExists(repository.path)) &&
-      (await getRepositoryType(repository.path)).kind === 'regular' &&
-      (await this._loadStatus(repository)) !== null
-
-    if (foundRepository) {
-      return await this._updateRepositoryMissing(repository, false)
-    }
-    return repository
-  }
+  
 
   /** This shouldn't be called directly. See `Dispatcher`. */
   public async _refreshRepository(repository: Repository): Promise<void> {
@@ -3794,7 +3345,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
       // up-to-date information to the user.
       return this.checkoutImplementation(repository, branch, account, strategy)
         .then(() => this.onSuccessfulCheckout(repository, branch))
-        .catch(e => this.emitError(new CheckoutError(e, repository, branch)))
+        .catch()
         .then(() => this.refreshAfterCheckout(repository, branch.name))
         .finally(() => this.updateCheckoutProgress(repository, null))
     })
@@ -3859,36 +3410,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
    * Note that the transient stash entry will not overwrite any current stash
    * entry for the target branch.
    */
-  private async checkoutAndBringChanges(
-    repository: Repository,
-    branch: Branch,
-    account: IGitAccount | null
-  ) {
-    try {
-      await this.checkoutIgnoringChanges(repository, branch, account)
-    } catch (checkoutError) {
-      if (!isLocalChangesOverwrittenError(checkoutError)) {
-        throw checkoutError
-      }
-
-      const stash = (await this.createStashEntry(repository, branch))
-        ? await getLastDesktopStashEntryForBranch(repository, branch)
-        : null
-
-      // Failing to stash the changes when we know that there are changes
-      // preventing a checkout is very likely due to assume-unchanged or
-      // skip-worktree. So instead of showing a "could not create stash" error
-      // we'll show the checkout error to the user and let them figure it out.
-      if (stash === null) {
-        throw checkoutError
-      }
-
-      await this.checkoutIgnoringChanges(repository, branch, account)
-      await popStashEntry(repository, stash.stashSha)
-
-      this.statsStore.recordChangesTakenToNewBranch()
-    }
-  }
+  
 
   private async onSuccessfulCheckout(repository: Repository, branch: Branch) {
     const repositoryState = this.repositoryStateCache.get(repository)
@@ -6687,49 +6209,7 @@ export class AppStore extends TypedBaseStore<IAppState> {
    * @param account The account (and thereby the GitHub host) under
    *                which the repository is to be created created
    */
-  public async _createTutorialRepository(account: Account) {
-    try {
-      await this.statsStore.recordTutorialStarted()
-
-      const name = 'desktop-tutorial'
-      const path = Path.resolve(await getDefaultDir(), name)
-
-      const apiRepository = await createTutorialRepository(
-        account,
-        name,
-        path,
-        (title, value, description) => {
-          if (
-            this.popupManager.currentPopup?.type ===
-            PopupType.CreateTutorialRepository
-          ) {
-            this.popupManager.updatePopup({
-              ...this.popupManager.currentPopup,
-              progress: { kind: 'generic', title, value, description },
-            })
-            this.emitUpdate()
-          }
-        }
-      )
-
-      await this._addTutorialRepository(path, account.endpoint, apiRepository)
-      await this.statsStore.recordTutorialRepoCreated()
-    } catch (err) {
-      sendNonFatalException('tutorialRepoCreation', err)
-
-      if (err instanceof GitError) {
-        this.emitError(err)
-      } else {
-        this.emitError(
-          new Error(
-            `Failed creating the tutorial repository.\n\n${err.message}`
-          )
-        )
-      }
-    } finally {
-      this._closePopup(PopupType.CreateTutorialRepository)
-    }
-  }
+  
 
   /** This shouldn't be called directly. See `Dispatcher`. */
   public _initializeCherryPickProgress(
@@ -7883,16 +7363,7 @@ function userIsStartingMultiCommitOperation(
   return false
 }
 
-function isLocalChangesOverwrittenError(error: Error): boolean {
-  if (error instanceof ErrorWithMetadata) {
-    return isLocalChangesOverwrittenError(error.underlyingError)
-  }
 
-  return (
-    error instanceof GitError &&
-    error.result.gitError === DugiteError.LocalChangesOverwritten
-  )
-}
 
 function constrain(
   value: IConstrainedValue | number,
@@ -7908,3 +7379,7 @@ function constrain(
     max: constrainedMax,
   }
 }
+function isLocalChangesOverwrittenError(checkoutError: any) {
+  throw new Error('Function not implemented.')
+}
+
